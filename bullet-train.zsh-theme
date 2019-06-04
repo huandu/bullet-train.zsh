@@ -534,7 +534,7 @@ prompt_perl() {
 # Go
 prompt_go() {
   setopt extended_glob
-  if [[ (-n *.go(#qN) || -d Godeps || -f glide.yaml) ]]; then
+  if [[ (-n *.go(#qN) || -d Godeps || -f glide.yaml || -f go.mod) ]]; then
     if command -v go > /dev/null 2>&1; then
       prompt_segment $BULLETTRAIN_GO_BG $BULLETTRAIN_GO_FG $BULLETTRAIN_GO_PREFIX" $(go version | awk '{print substr($3, 3)}')"
     fi
@@ -575,6 +575,20 @@ prompt_virtualenv() {
 # NVM: Node version manager
 prompt_nvm() {
   local nvm_prompt
+  local dir="$(pwd)"
+  
+  while true; do
+    if [ "$dir" = "/" ]; then
+      return
+    fi
+
+    if [[ (-f "$dir/package.json" || -d "$dir/node_modules") ]]; then
+      break
+    fi
+
+    dir="$(dirname $dir)"
+  done
+
   if type nvm >/dev/null 2>&1; then
     nvm_prompt=$(nvm current 2>/dev/null)
     [[ "${nvm_prompt}x" == "x" ]] && return
@@ -583,6 +597,7 @@ prompt_nvm() {
   else
     return
   fi
+
   nvm_prompt=${nvm_prompt}
   prompt_segment $BULLETTRAIN_NVM_BG $BULLETTRAIN_NVM_FG $BULLETTRAIN_NVM_PREFIX$nvm_prompt
 }
